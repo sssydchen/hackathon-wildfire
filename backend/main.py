@@ -13,7 +13,7 @@ from backend.ingest.osm import fetch_assets, get_overpass_query
 from backend.ingest.weather import fetch_weather_summary
 from backend.model.risk_model import compute_asset_risk
 
-app = FastAPI(title="Wildfire Cascade API", version="0.1.0")
+app = FastAPI(title="Wildfire Cascade API", version="0.2.0")
 
 SCENARIO_DIR = Path(__file__).resolve().parent / "data_cache" / "scenarios"
 
@@ -23,6 +23,7 @@ class RiskRequest(BaseModel):
     horizon_hours: int = Field(default=24, ge=1, le=48)
     firms_days: int = Field(default=1, ge=1, le=10)
     fire_source: str = Field(default="VIIRS_NOAA20_NRT")
+    fire_confidence_threshold: float = Field(default=0.0, ge=0.0, le=100.0)
 
 
 @app.get("/health")
@@ -35,12 +36,19 @@ def fires(
     bbox: str = Query(..., description="west,south,east,north"),
     days: int = 1,
     source: str = "VIIRS_NOAA20_NRT",
+    min_confidence: float = Query(default=0.0, ge=0.0, le=100.0),
 ) -> Dict:
     try:
-        points = fetch_fires(bbox=bbox, days=days, source=source)
+        points = fetch_fires(bbox=bbox, days=days, source=source, min_confidence=min_confidence)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Failed to fetch fires: {exc}")
-    return {"bbox": bbox, "count": len(points), "fires": points}
+    return {
+        "bbox": bbox,
+        "count": len(points),
+        "source": source,
+        "min_confidence": min_confidence,
+        "fires": points,
+    }
 
 
 @app.get("/assets")
@@ -60,7 +68,12 @@ def assets_overpass_query(bbox: str = Query(..., description="west,south,east,no
 @app.post("/risk")
 def risk(req: RiskRequest) -> Dict:
     try:
-        fires = fetch_fires(bbox=req.bbox, days=req.firms_days, source=req.fire_source)
+        fires = fetch_fires(
+            bbox=req.bbox,
+            days=req.firms_days,
+            source=req.fire_source,
+            min_confidence=req.fire_confidence_threshold,
+        )
         assets = fetch_assets(bbox=req.bbox)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Data ingestion error: {exc}")
@@ -95,6 +108,7 @@ def risk(req: RiskRequest) -> Dict:
         "weather": weather,
         "fire_count": len(fires),
         "asset_count": len(assets),
+        "fire_confidence_threshold": req.fire_confidence_threshold,
         "assets": scored_assets,
         "cascade": cascade,
     }
