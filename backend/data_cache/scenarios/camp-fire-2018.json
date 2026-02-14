@@ -1,0 +1,81 @@
+{
+  "scenario": "camp-fire-2018",
+  "description": "Replay-style sample payload for demo stability.",
+  "window": {
+    "start": "2018-11-07T08:00:00Z",
+    "end": "2018-11-08T20:00:00Z"
+  },
+  "bbox": "-121.8,39.6,-121.2,40.1",
+  "weather": {
+    "temperature_c": 22.4,
+    "humidity_pct": 18.0,
+    "wind_speed_kmh": 31.0,
+    "wind_direction_deg": 210.0
+  },
+  "fires": [
+    {"id": "camp_1", "lat": 39.813, "lon": -121.434},
+    {"id": "camp_2", "lat": 39.785, "lon": -121.470},
+    {"id": "camp_3", "lat": 39.761, "lon": -121.502}
+  ],
+  "assets": [
+    {
+      "id": "osm_way_1001",
+      "asset_type": "substation",
+      "name": "Paradise Substation",
+      "lat": 39.760,
+      "lon": -121.620,
+      "risk_score": 0.83,
+      "risk_bucket": "high"
+    },
+    {
+      "id": "osm_node_1002",
+      "asset_type": "hospital",
+      "name": "Feather River Hospital",
+      "lat": 39.754,
+      "lon": -121.610,
+      "risk_score": 0.66,
+      "risk_bucket": "medium"
+    },
+    {
+      "id": "osm_way_1003",
+      "asset_type": "water_facility",
+      "name": "Paradise Water Facility",
+      "lat": 39.748,
+      "lon": -121.597,
+      "risk_score": 0.57,
+      "risk_bucket": "medium"
+    }
+  ],
+  "cascade": {
+    "cascade_cards": [
+      {
+        "type": "substation_outage",
+        "trigger_asset_id": "osm_way_1001",
+        "trigger_name": "Paradise Substation",
+        "trigger_risk": 0.83,
+        "impacted_hospitals": [
+          {
+            "asset_id": "osm_node_1002",
+            "name": "Feather River Hospital",
+            "distance_km": 1.18
+          }
+        ],
+        "impacted_water_facilities": [
+          {
+            "asset_id": "osm_way_1003",
+            "name": "Paradise Water Facility",
+            "distance_km": 2.87
+          }
+        ]
+      }
+    ],
+    "compromised_roads": [
+      {
+        "asset_id": "osm_way_9999",
+        "name": "Skyway",
+        "distance_to_fire_km": 1.41,
+        "status": "compromised"
+      }
+    ]
+  }
+}
