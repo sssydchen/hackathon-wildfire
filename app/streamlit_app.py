@@ -20,6 +20,7 @@ api_base = st.sidebar.text_input("API Base", "http://127.0.0.1:8000")
 fire_source = st.sidebar.selectbox("FIRMS Source", ["VIIRS_NOAA20_NRT", "VIIRS_SNPP_NRT"], index=0)
 firms_days = st.sidebar.selectbox("Fire lookback days", [1, 2, 3], index=0)
 horizon = st.sidebar.selectbox("Risk horizon (hours)", [24, 48], index=0)
+weather_source = st.sidebar.selectbox("Weather Source", ["gridmet", "openmeteo"], index=0)
 min_fire_confidence = st.sidebar.slider("Fire confidence threshold", 0, 100, 60)
 min_asset_risk = st.sidebar.slider("Asset risk threshold", 0.0, 1.0, 0.4, 0.05)
 auto_analyze = st.sidebar.checkbox("Auto analyze on zoom", value=True)
@@ -63,6 +64,7 @@ def _run_risk_analysis(bbox: str) -> Dict:
         "firms_days": firms_days,
         "fire_source": fire_source,
         "fire_confidence_threshold": float(min_fire_confidence),
+        "weather_source": weather_source,
     }
     resp = requests.post(f"{api_base}/risk", json=payload, timeout=90)
     resp.raise_for_status()
@@ -146,10 +148,11 @@ except Exception as exc:
     st.error(f"Failed to load nationwide fire data: {exc}")
     st.stop()
 
-col1, col2, col3 = st.columns(3)
+col1, col2, col3, col4 = st.columns(4)
 col1.metric("US fire detections", len(usa_fires))
 col2.metric("Min fire confidence", min_fire_confidence)
 col3.metric("Risk horizon (hours)", horizon)
+col4.metric("Weather source", weather_source)
 
 st.subheader("Nationwide Wildfire Map")
 fires_map = _build_national_map(usa_fires)

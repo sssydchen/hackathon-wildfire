@@ -1,13 +1,13 @@
 # wildfire-cascade
 
-FastAPI + Streamlit MVP for wildfire-to-infrastructure risk and cascade impact estimation.
+FastAPI + Streamlit MVP for wildfire-to-infrastructure risk and cascade impact estimation using FIRMS + GridMET.
 
 ## Implemented
 
 - `GET /fires?bbox=...&min_confidence=...` (NASA FIRMS, requires `FIRMS_API_KEY`)
 - `GET /assets?bbox=...` (OSM Overpass assets)
 - `GET /assets/overpass_query?bbox=...` (ready-to-run Overpass query)
-- `POST /risk` (distance + wind alignment + sigmoid risk model + cascade cards)
+- `POST /risk` (distance + wind alignment + sigmoid risk model + cascade cards; weather source: gridmet/openmeteo)
 - `GET /scenario/camp-fire-2018` (cached replay payload)
 - `app/streamlit_app.py` (nationwide map + zoom-in analysis + top risk asset table)
 

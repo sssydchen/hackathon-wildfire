@@ -13,7 +13,7 @@ from backend.ingest.osm import fetch_assets, get_overpass_query
 from backend.ingest.weather import fetch_weather_summary
 from backend.model.risk_model import compute_asset_risk
 
-app = FastAPI(title="Wildfire Cascade API", version="0.2.0")
+app = FastAPI(title="Wildfire Cascade API", version="0.3.0")
 
 SCENARIO_DIR = Path(__file__).resolve().parent / "data_cache" / "scenarios"
 
@@ -24,6 +24,7 @@ class RiskRequest(BaseModel):
     firms_days: int = Field(default=1, ge=1, le=10)
     fire_source: str = Field(default="VIIRS_NOAA20_NRT")
     fire_confidence_threshold: float = Field(default=0.0, ge=0.0, le=100.0)
+    weather_source: str = Field(default="gridmet", description="gridmet or openmeteo")
 
 
 @app.get("/health")
@@ -83,7 +84,12 @@ def risk(req: RiskRequest) -> Dict:
     center_lon = (west + east) / 2.0
 
     try:
-        weather = fetch_weather_summary(lat=center_lat, lon=center_lon, hours=req.horizon_hours)
+        weather = fetch_weather_summary(
+            lat=center_lat,
+            lon=center_lon,
+            hours=req.horizon_hours,
+            source=req.weather_source,
+        )
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"Weather fetch error: {exc}")
 
@@ -106,6 +112,7 @@ def risk(req: RiskRequest) -> Dict:
         "bbox": req.bbox,
         "horizon_hours": req.horizon_hours,
         "weather": weather,
+        "weather_source": weather.get("weather_source", req.weather_source),
         "fire_count": len(fires),
         "asset_count": len(assets),
         "fire_confidence_threshold": req.fire_confidence_threshold,

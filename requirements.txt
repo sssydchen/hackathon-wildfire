@@ -6,3 +6,6 @@ streamlit==1.49.1
 folium==0.20.0
 streamlit-folium==0.25.1
 pandas==2.3.2
+xarray==2025.8.0
+netcdf4==1.7.2
+numpy==2.3.3

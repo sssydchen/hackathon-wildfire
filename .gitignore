@@ -32,3 +32,5 @@ dist/
 # Local runtime/cache data
 backend/data_cache/*.json
 !backend/data_cache/scenarios/camp-fire-2018.json
+
+data/*.csv
